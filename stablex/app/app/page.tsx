@@ -19,7 +19,7 @@ const LandingPage = () => {
       {/* Hero Section */}
       <main className="flex flex-col items-center text-center flex-1 px-4">
         <h2 className="text-5xl font-extrabold text-white">
-          The Future of Decentralized Exchange
+          A sustainable Decentralized Exchange
         </h2>
         <p className="text-lg text-gray-300 mt-4 max-w-2xl">
           Fast, sustainable, and reliable trading powered by Solana.
