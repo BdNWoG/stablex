@@ -23,7 +23,7 @@ const LandingPage = () => {
           The Future of Decentralized Exchange
         </h2>
         <p className="text-lg text-gray-300 mt-4 max-w-2xl">
-          Fast, secure, and reliable trading powered by Solana blockchain.
+          Fast, sustainable, and reliable trading powered by Solana.
           Experience lightning-fast transactions and a user-friendly interface.
         </p>
         <Link href="/trade">
