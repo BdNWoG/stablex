@@ -16,7 +16,13 @@ const geistMono = localFont({
 export const metadata: Metadata = {
   title: "StablEx",
   description: "A fast, sustainable, and decentralized exchange powered by Solana.",
+  icons: {
+    icon: "/logo.png", // Path to your logo in the `public` folder
+    shortcut: "/logo.png", // Optional: Shortcut icon
+    apple: "/logo.png", // Optional: Apple Touch icon
+  },
 };
+
 
 export default function RootLayout({
   children,
