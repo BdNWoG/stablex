@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import '@fontsource/exo-2'; // Add Exo 2 for a futuristic vibe
 
 const LandingPage = () => {
@@ -25,9 +26,11 @@ const LandingPage = () => {
           Fast, secure, and reliable trading powered by Solana blockchain.
           Experience lightning-fast transactions and a user-friendly interface.
         </p>
-        <button className="mt-8 bg-orange-500 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition">
-          Get Started
-        </button>
+        <Link href="/trade">
+          <a className="mt-8 bg-orange-500 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition inline-block">
+            Get Started
+          </a>
+        </Link>
 
         {/* Graphic Section */}
         <div className="mt-12 relative">
