@@ -71,7 +71,7 @@ const LandingPage = () => {
       {/* Footer Section */}
       <footer className="w-full bg-gray-800 py-4 text-center">
         <p className="text-gray-500">
-          © 2024 Stablex. Powered by Solana Blockchain.
+          © 2024 Stablex. Powered by Solana.
         </p>
       </footer>
     </div>
