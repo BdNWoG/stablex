@@ -1,1 +1,3 @@
 # stablex
+
+# Stablex is a robust decentralized exchange built on Solana, designed for longevity and guided by values that unite traders and the protocol. By “sustainable,” we mean a commitment to enduring growth, where all participants benefit from transparent governance and trust is continually reinforced. Its intuitive interface pairs seamlessly with Solana’s high-speed capabilities, making transactions efficient and reliable. Stablex’s guiding principle is to foster a thriving, long-lasting ecosystem—one where traders and the protocol align on shared goals, ensuring security, meaningful engagement, and success beyond short-term gains.
