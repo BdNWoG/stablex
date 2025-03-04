@@ -1,8 +1,28 @@
+"use client";
+
 import React from 'react';
 import Image from 'next/image';
-import '@fontsource/exo-2'; // Add Exo 2 for a futuristic vibe
+import '@fontsource/exo-2';
+import { useAddress, useMetamask } from '@thirdweb-dev/react';
+import { useRouter } from 'next/navigation';
 
 const LandingPage = () => {
+  const address = useAddress();
+  const connectWithMetamask = useMetamask();
+  const router = useRouter();
+
+  const handleGetStarted = async () => {
+    if (!address) {
+      await connectWithMetamask();
+      // If wallet becomes connected after prompting, navigate to exchange
+      if (address) {
+        router.push('/exchange');
+      }
+    } else {
+      router.push('/exchange');
+    }
+  };
+
   return (
     <div className="bg-gradient-to-br from-black via-gray-900 to-gray-800 min-h-screen text-white flex flex-col items-center justify-between font-exo">
       {/* Header Section */}
@@ -11,21 +31,33 @@ const LandingPage = () => {
           <Image src="/logo.png" alt="Stablex Logo" width={48} height={48} priority />
           <h1 className="text-2xl font-bold text-white">Stablex</h1>
         </div>
-        <button className="bg-blue-500 px-6 py-2 rounded-lg text-white hover:bg-blue-600 transition">
-          Connect Wallet
-        </button>
+        {address ? (
+          <button className="bg-blue-500 px-6 py-2 rounded-lg text-white hover:bg-blue-600 transition">
+            {address.substring(0, 6)}...{address.substring(address.length - 4)}
+          </button>
+        ) : (
+          <button
+            onClick={() => connectWithMetamask()} // Ensure no event object is passed
+            className="bg-blue-500 px-6 py-2 rounded-lg text-white hover:bg-blue-600 transition"
+          >
+            Connect Wallet
+          </button>
+        )}
       </header>
 
       {/* Hero Section */}
       <main className="flex flex-col items-center text-center flex-1 px-4">
         <h2 className="text-5xl font-extrabold text-white">
-          A sustainable Decentralized Exchange
+          A Sustainable Decentralized Exchange
         </h2>
         <p className="text-lg text-gray-300 mt-4 max-w-2xl">
           Fast, sustainable, and reliable trading powered by Solana.
           Experience lightning-fast transactions and a user-friendly interface.
         </p>
-        <button className="mt-8 bg-orange-500 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition inline-block">
+        <button
+          onClick={handleGetStarted}
+          className="mt-8 bg-orange-500 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition inline-block"
+        >
           Get Started
         </button>
 
