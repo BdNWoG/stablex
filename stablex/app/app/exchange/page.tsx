@@ -6,66 +6,61 @@ import "@fontsource/exo-2";
 import { useAddress, useDisconnect } from "@thirdweb-dev/react";
 import { useRouter } from "next/navigation";
 
-/**
- * Generates random candlestick data for demonstration.
- * Each candle: { open, high, low, close, time }
- *    - "time" is a numeric timestamp in milliseconds.
+/* -------------------------------------------------------------------------- */
+/*                         1) STATIC & INITIAL DATA                           */
+/* -------------------------------------------------------------------------- */
+
+/** 
+ * We have a single token: MYT. 
+ * Its price is initially set to 1e-9 USDC per token. 
  */
-function generateRandomCandleData(numCandles = 40) {
-  const data = [];
-  let price = 100; // starting reference price
-  const now = Date.now();
+const INITIAL_PRICE = 1e-9;
 
-  for (let i = 0; i < numCandles; i++) {
-    // Simplistic random approach
-    // 1. "open" is last candle's close or the initial "price"
-    // 2. random changes determine high, low, close
-    const open = i === 0 ? price : data[i - 1].close;
-    const deltaClose = (Math.random() - 0.5) * 4; // random "volatility"
-    const close = open + deltaClose;
-    const high = Math.max(open, close) + Math.random() * 2; // small random wiggle
-    const low = Math.min(open, close) - Math.random() * 2;
-
-    data.push({
-      open,
-      high,
-      low,
-      close,
-      // For demonstration, let's say each candle = 1 minute apart
-      time: now + i * 60_000
-    });
-  }
-
-  return data;
-}
-
-/**
- * Generates random order book data (asks, bids) for demonstration.
+/** 
+ * We'll store a small static candlestick array, 
+ * all set to the initial price of 1e-9. 
  */
-function generateRandomOrderBookEntries(count = 8) {
-  const asks = [];
-  const bids = [];
-  // Let's pick a mid-price around 100
-  const basePrice = 100 + (Math.random() - 0.5) * 10;
+const INITIAL_CANDLES = [
+  {
+    open: 1e-9,
+    high: 1e-9,
+    low: 1e-9,
+    close: 1e-9,
+    time: Date.now() - 4 * 60_000, // 4 minutes ago
+  },
+  {
+    open: 1e-9,
+    high: 1e-9,
+    low: 1e-9,
+    close: 1e-9,
+    time: Date.now() - 3 * 60_000, // 3 minutes ago
+  },
+  {
+    open: 1e-9,
+    high: 1e-9,
+    low: 1e-9,
+    close: 1e-9,
+    time: Date.now() - 2 * 60_000, // 2 minutes ago
+  },
+  {
+    open: 1e-9,
+    high: 1e-9,
+    low: 1e-9,
+    close: 1e-9,
+    time: Date.now() - 1 * 60_000, // 1 minute ago
+  },
+  {
+    open: 1e-9,
+    high: 1e-9,
+    low: 1e-9,
+    close: 1e-9,
+    time: Date.now(), // current minute
+  },
+];
 
-  for (let i = 0; i < count; i++) {
-    // Asks: slightly above basePrice
-    let askPrice = basePrice + Math.random() * 5;
-    let askSize = (Math.random() * 5).toFixed(2);
-    asks.push({ price: askPrice.toFixed(2), size: askSize });
-
-    // Bids: slightly below basePrice
-    let bidPrice = basePrice - Math.random() * 5;
-    let bidSize = (Math.random() * 5).toFixed(2);
-    bids.push({ price: bidPrice.toFixed(2), size: bidSize });
-  }
-
-  // Sort asks ascending by price, bids descending by price
-  asks.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-  bids.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
-
-  return { asks, bids };
-}
+/* -------------------------------------------------------------------------- */
+/*                     2) HELPER: DRAW CANDLESTICK CHART                      */
+/* -------------------------------------------------------------------------- */
 
 /**
  * Renders a candlestick chart with time (x-axis) and price (y-axis).
@@ -97,52 +92,53 @@ function drawCandlestickChart(canvas, data) {
     if (c.low < minPrice) minPrice = c.low;
     if (c.high > maxPrice) maxPrice = c.high;
   }
-  // Pad extremes by a little to prevent candles on the exact edge
+  // Pad extremes to prevent candles on the exact edge
   const pad = (maxPrice - minPrice) * 0.05;
   minPrice -= pad;
   maxPrice += pad;
 
-  // Determine time range
-  const minTime = data[0].time;
-  const maxTime = data[data.length - 1].time;
-  const timeRange = maxTime - minTime || 1;
-
-  // Candle width & spacing
-  const candleWidth = chartWidth / data.length * 0.7;
+  // Candle spacing
+  const candleWidth = (chartWidth / data.length) * 0.7;
   const candleSpacing = chartWidth / data.length;
 
-  // Helper functions to translate price/time to canvas coordinates
+  // Helper: convert price -> canvas y
   function yPixel(price) {
-    return marginTop + chartHeight - ((price - minPrice) / (maxPrice - minPrice)) * chartHeight;
-  }
-  function xPixel(index) {
-    return marginLeft + index * candleSpacing + (candleSpacing - candleWidth) / 2;
+    return (
+      marginTop +
+      chartHeight -
+      ((price - minPrice) / (maxPrice - minPrice)) * chartHeight
+    );
   }
 
-  // Draw grid lines & price axis labels
+  // Helper: index -> canvas x
+  function xPixel(index) {
+    return (
+      marginLeft + index * candleSpacing + (candleSpacing - candleWidth) / 2
+    );
+  }
+
+  // Grid lines & Price axis labels
   ctx.strokeStyle = "#555";
   ctx.fillStyle = "#aaa";
   ctx.font = "12px Exo 2, sans-serif";
   ctx.textAlign = "right";
 
-  // Let's draw 5 horizontal grid lines/labels
+  // Draw ~5 horizontal grid lines
   for (let i = 0; i <= 5; i++) {
     const priceVal = minPrice + (i * (maxPrice - minPrice)) / 5;
     const y = yPixel(priceVal);
-
-    // Horizontal line
     ctx.beginPath();
     ctx.moveTo(marginLeft, y);
     ctx.lineTo(width - marginRight, y);
     ctx.stroke();
 
-    // Price label
-    ctx.fillText(priceVal.toFixed(2), marginLeft - 5, y + 3);
+    // Price label (scientific notation for clarity at 1e-9)
+    ctx.fillText(priceVal.toExponential(2), marginLeft - 5, y + 3);
   }
 
-  // Draw time axis labels (e.g., every 5 candles)
+  // Time axis labels 
   ctx.textAlign = "center";
-  for (let i = 0; i < data.length; i += 5) {
+  for (let i = 0; i < data.length; i++) {
     const candle = data[i];
     const x = xPixel(i) + candleWidth / 2;
 
@@ -152,13 +148,16 @@ function drawCandlestickChart(canvas, data) {
     ctx.lineTo(x, marginTop + chartHeight);
     ctx.stroke();
 
-    // Convert timestamp to HH:MM or some short format
+    // Convert timestamp to HH:MM
     const date = new Date(candle.time);
-    const label = `${date.getHours()}:${String(date.getMinutes()).padStart(2, "0")}`;
+    const label = `${date.getHours()}:${String(date.getMinutes()).padStart(
+      2,
+      "0"
+    )}`;
     ctx.fillText(label, x, marginTop + chartHeight + 15);
   }
 
-  // Now draw each candle
+  // Draw the candlesticks
   for (let i = 0; i < data.length; i++) {
     const { open, close, high, low } = data[i];
     const candleX = xPixel(i);
@@ -169,7 +168,7 @@ function drawCandlestickChart(canvas, data) {
     ctx.strokeStyle = isBullish ? "#00FF00" : "#FF0000";
     ctx.fillStyle = isBullish ? "#00FF00" : "#FF0000";
 
-    // Wicks
+    // Wick
     ctx.beginPath();
     ctx.moveTo(wickX, yPixel(high));
     ctx.lineTo(wickX, yPixel(low));
@@ -179,23 +178,65 @@ function drawCandlestickChart(canvas, data) {
     const candleTop = yPixel(Math.max(open, close));
     const candleBottom = yPixel(Math.min(open, close));
     const candleHeight = candleBottom - candleTop;
-
-    ctx.fillRect(candleX, candleTop, candleWidth, candleHeight || 1); // If open == close, just a line
+    ctx.fillRect(
+      candleX,
+      candleTop,
+      candleWidth,
+      candleHeight || 1 // If open == close => thin line
+    );
   }
 }
+
+/* -------------------------------------------------------------------------- */
+/*                             3) DYNAMIC ORDERBOOK                           */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Given the newPrice, re-center the order book around that price.
+ * We'll keep the same sizes but shift the price up/down.
+ * This is purely for demonstration.
+ */
+function generateOrderBookAroundPrice(newPrice) {
+  return {
+    asks: [
+      { price: (newPrice * 1.1).toExponential(9), size: "5000" },
+      { price: (newPrice * 1.2).toExponential(9), size: "800" },
+      { price: (newPrice * 1.3).toExponential(9), size: "300" },
+    ],
+    bids: [
+      { price: (newPrice * 0.9).toExponential(9), size: "1000" },
+      { price: (newPrice * 0.8).toExponential(9), size: "1200" },
+      { price: (newPrice * 0.7).toExponential(9), size: "900" },
+    ],
+  };
+}
+
+/* -------------------------------------------------------------------------- */
+/*                         4) MAIN EXCHANGE COMPONENT                         */
+/* -------------------------------------------------------------------------- */
 
 const ExchangePage = () => {
   const address = useAddress();
   const disconnectWallet = useDisconnect();
   const router = useRouter();
 
-  // Available tokens
-  const tokens = ["SOL", "BTC", "ETH", "USDC"];
-  const [selectedToken, setSelectedToken] = useState(tokens[0]);
+  // We'll track a single token: MYT
+  // Price is initially 1e-9 USDC
+  const [price, setPrice] = useState(INITIAL_PRICE);
 
-  // Chart & Order Book data
-  const [chartData, setChartData] = useState([]);
-  const [orderBook, setOrderBook] = useState({ asks: [], bids: [] });
+  // We'll store 2 local balances for demonstration:
+  // - userUSDC: how much USDC the user has
+  // - userMYT : how many MYT tokens the user has
+  const [userUSDC, setUserUSDC] = useState(1000.0); // start with 1000 USDC
+  const [userMYT, setUserMYT] = useState(0.0);      // start with 0 MYT
+
+  // Our candlestick data
+  const [candles, setCandles] = useState(INITIAL_CANDLES);
+
+  // Our order book, which we'll re-center around new price
+  const [orderBook, setOrderBook] = useState(
+    generateOrderBookAroundPrice(INITIAL_PRICE)
+  );
 
   // Buy / Sell form inputs
   const [buyQuantity, setBuyQuantity] = useState("");
@@ -211,38 +252,107 @@ const ExchangePage = () => {
     }
   }, [address, router]);
 
-  // Update chart & order book data when selectedToken changes
-  useEffect(() => {
-    const newCandleData = generateRandomCandleData(40);
-    setChartData(newCandleData);
-
-    const newOrderBook = generateRandomOrderBookEntries(12);
-    setOrderBook(newOrderBook);
-  }, [selectedToken]);
-
-  // Render the chart whenever chartData changes
+  // Draw the chart whenever candles changes
   useEffect(() => {
     if (chartCanvasRef.current) {
-      drawCandlestickChart(chartCanvasRef.current, chartData);
+      drawCandlestickChart(chartCanvasRef.current, candles);
     }
-  }, [chartData]);
+  }, [candles]);
 
-  // Handle buy and sell
+  /**
+   * Helper to update the last candle with a new trade price,
+   * adjusting high/low/close accordingly.
+   */
+  function updateCandleWithNewPrice(newPrice) {
+    setCandles((prev) => {
+      const updated = [...prev];
+      const lastCandle = { ...updated[updated.length - 1] };
+
+      // If newPrice is above current high, update high
+      if (newPrice > lastCandle.high) lastCandle.high = newPrice;
+      // If newPrice is below current low, update low
+      if (newPrice < lastCandle.low) lastCandle.low = newPrice;
+      // Update close
+      lastCandle.close = newPrice;
+
+      updated[updated.length - 1] = lastCandle;
+      return updated;
+    });
+  }
+
+  /**
+   * Simple formula to adjust the price each time a trade occurs.
+   * - On buy, price goes up slightly
+   * - On sell, price goes down slightly
+   * You can customize this logic as needed.
+   */
+  function adjustPriceOnTrade(isBuy, qty) {
+    // We'll move the price by 0.0001 * qty.
+    let delta = 0.0001 * qty; 
+
+    // For buy, price goes up; for sell, price goes down
+    delta = isBuy ? delta : -delta;
+
+    const newPrice = price * (1 + delta);
+
+    // Prevent negative or zero price
+    const clampedPrice = newPrice > 0 ? newPrice : 1e-12; 
+
+    // Update the price in state
+    setPrice(clampedPrice);
+    // Update the candlestick
+    updateCandleWithNewPrice(clampedPrice);
+    // Update the orderbook around the new price
+    setOrderBook(generateOrderBookAroundPrice(clampedPrice));
+  }
+
+  // Buy logic
   const handleBuy = () => {
-    if (!buyQuantity || isNaN(Number(buyQuantity))) {
+    const qty = parseFloat(buyQuantity);
+    if (!qty || isNaN(qty) || qty <= 0) {
       alert("Please enter a valid buy quantity.");
       return;
     }
-    alert(`You bought ${buyQuantity} ${selectedToken}! (demo only)`);
+    // cost in USDC
+    const cost = qty * price;
+    if (cost > userUSDC) {
+      alert("You don't have enough USDC to buy that many MYT.");
+      return;
+    }
+
+    // Execute trade locally
+    setUserUSDC((prev) => prev - cost);
+    setUserMYT((prev) => prev + qty);
+
+    // Adjust price & refresh candlestick + order book
+    adjustPriceOnTrade(true, qty);
+
+    alert(`You bought ${qty} MYT for ${cost} USDC! (demo only)`);
     setBuyQuantity("");
   };
 
+  // Sell logic
   const handleSell = () => {
-    if (!sellQuantity || isNaN(Number(sellQuantity))) {
+    const qty = parseFloat(sellQuantity);
+    if (!qty || isNaN(qty) || qty <= 0) {
       alert("Please enter a valid sell quantity.");
       return;
     }
-    alert(`You sold ${sellQuantity} ${selectedToken}! (demo only)`);
+    if (qty > userMYT) {
+      alert("You don't have enough MYT to sell.");
+      return;
+    }
+
+    // proceeds in USDC
+    const proceeds = qty * price;
+
+    setUserMYT((prev) => prev - qty);
+    setUserUSDC((prev) => prev + proceeds);
+
+    // Adjust price & refresh candlestick + order book
+    adjustPriceOnTrade(false, qty);
+
+    alert(`You sold ${qty} MYT for ${proceeds} USDC! (demo only)`);
     setSellQuantity("");
   };
 
@@ -262,54 +372,54 @@ const ExchangePage = () => {
         </button>
       </header>
 
-      {/* Token Menu */}
+      {/* Single Token Info */}
       <nav className="px-6 mb-4">
-        <ul className="flex space-x-4">
-          {tokens.map((token) => (
-            <li
-              key={token}
-              onClick={() => setSelectedToken(token)}
-              className={`cursor-pointer py-3 px-6 rounded text-lg ${
-                selectedToken === token ? "bg-orange-500" : "bg-gray-800 hover:bg-gray-700"
-              } transition`}
-            >
-              {token}
-            </li>
-          ))}
-        </ul>
+        <h2 className="text-2xl font-extrabold">MYT/USDC</h2>
+        <p className="text-gray-400 mt-2">
+          Dummy token on Solana Devnet. Current price:{" "}
+          <strong>{price.toExponential(9)} USDC</strong>
+        </p>
       </nav>
 
       {/* Main Exchange Content */}
       <main className="flex-1 flex flex-col items-center px-4 pb-8">
-        <h2 className="text-3xl font-extrabold mt-2 mb-2">
-          Trading {selectedToken}/USD
-        </h2>
+        {/* Balances Display */}
+        <div className="flex space-x-8 mt-2">
+          <div className="bg-gray-800 p-4 rounded">
+            <p className="font-bold">Your USDC Balance</p>
+            <p className="text-green-400">{userUSDC.toFixed(9)} USDC</p>
+          </div>
+          <div className="bg-gray-800 p-4 rounded">
+            <p className="font-bold">Your MYT Balance</p>
+            <p className="text-blue-400">{userMYT.toFixed(9)} MYT</p>
+          </div>
+        </div>
 
         {/* Chart & Order Book Section */}
-        <div className="w-full max-w-7xl flex flex-col md:flex-row gap-6 mt-6">
+        <div className="w-full max-w-6xl flex flex-col md:flex-row gap-6 mt-6">
           {/* Left: Candlestick Chart */}
           <div className="flex-1 bg-gray-900 p-4 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4">Price Chart (Candlesticks)</h3>
+            <h3 className="text-xl font-bold mb-4">MYT Price Chart</h3>
             <canvas
               ref={chartCanvasRef}
-              width={900}
-              height={600}
+              width={800}
+              height={400}
               className="rounded bg-gray-800 border border-gray-700"
             />
           </div>
 
-          {/* Right: Order Book */}
-          <div className="w-full md:w-1/2 bg-gray-900 p-4 rounded-lg shadow-lg">
+          {/* Right: Order Book (Dynamic) */}
+          <div className="w-full md:w-1/3 bg-gray-900 p-4 rounded-lg shadow-lg">
             <h3 className="text-xl font-bold mb-4">Order Book</h3>
-            <div className="h-[500px] overflow-y-auto space-y-6">
+            <div className="h-[400px] overflow-y-auto space-y-6">
               {/* Asks */}
               <div>
                 <h4 className="font-semibold mb-2 text-red-400">Asks</h4>
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr>
-                      <th className="py-1">Price</th>
-                      <th className="py-1">Size</th>
+                      <th className="py-1">Price (USDC)</th>
+                      <th className="py-1">Size (MYT)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -329,8 +439,8 @@ const ExchangePage = () => {
                 <table className="w-full text-left text-sm">
                   <thead>
                     <tr>
-                      <th className="py-1">Price</th>
-                      <th className="py-1">Size</th>
+                      <th className="py-1">Price (USDC)</th>
+                      <th className="py-1">Size (MYT)</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -348,14 +458,14 @@ const ExchangePage = () => {
         </div>
 
         {/* Buy/Sell Section */}
-        <div className="w-full max-w-7xl flex flex-col md:flex-row gap-6 mt-6">
+        <div className="w-full max-w-6xl flex flex-col md:flex-row gap-6 mt-6">
           {/* Buy Box */}
           <div className="flex-1 bg-gray-900 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4 text-green-400">Buy {selectedToken}</h3>
+            <h3 className="text-xl font-bold mb-4 text-green-400">Buy MYT</h3>
             <div className="flex flex-col space-y-4">
               <input
                 type="text"
-                placeholder="Quantity"
+                placeholder="Quantity of MYT"
                 value={buyQuantity}
                 onChange={(e) => setBuyQuantity(e.target.value)}
                 className="w-full px-4 py-3 rounded bg-gray-800 text-white focus:outline-none text-lg"
@@ -371,11 +481,11 @@ const ExchangePage = () => {
 
           {/* Sell Box */}
           <div className="flex-1 bg-gray-900 p-6 rounded-lg shadow-lg">
-            <h3 className="text-xl font-bold mb-4 text-red-400">Sell {selectedToken}</h3>
+            <h3 className="text-xl font-bold mb-4 text-red-400">Sell MYT</h3>
             <div className="flex flex-col space-y-4">
               <input
                 type="text"
-                placeholder="Quantity"
+                placeholder="Quantity of MYT"
                 value={sellQuantity}
                 onChange={(e) => setSellQuantity(e.target.value)}
                 className="w-full px-4 py-3 rounded bg-gray-800 text-white focus:outline-none text-lg"
@@ -393,7 +503,9 @@ const ExchangePage = () => {
 
       {/* Footer */}
       <footer className="w-full bg-gray-800 py-4 text-center">
-        <p className="text-gray-500">© 2024 Stablex. Powered by Solana.</p>
+        <p className="text-gray-500">
+          © 2024 Stablex. Powered by Solana (Devnet).
+        </p>
       </footer>
     </div>
   );
