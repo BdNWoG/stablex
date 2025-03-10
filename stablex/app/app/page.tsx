@@ -23,6 +23,11 @@ const LandingPage = () => {
     }
   };
 
+  const handleListYourCoin = () => {
+    // Navigate to a page where project owners can submit their token details
+    router.push('/list-your-coin');
+  };
+
   return (
     <div className="bg-gradient-to-br from-black via-gray-900 to-gray-800 min-h-screen text-white flex flex-col items-center justify-between font-exo">
       {/* Header Section */}
@@ -37,7 +42,7 @@ const LandingPage = () => {
           </button>
         ) : (
           <button
-            onClick={() => connectWithMetamask()} // Ensure no event object is passed
+            onClick={() => connectWithMetamask()} 
             className="bg-blue-500 px-6 py-2 rounded-lg text-white hover:bg-blue-600 transition"
           >
             Connect Wallet
@@ -48,11 +53,14 @@ const LandingPage = () => {
       {/* Hero Section */}
       <main className="flex flex-col items-center text-center flex-1 px-4">
         <h2 className="text-5xl font-extrabold text-white">
-          A Sustainable Decentralized Exchange
+          A New Era of Stable, Decentralized Trading
         </h2>
         <p className="text-lg text-gray-300 mt-4 max-w-2xl">
-          Fast, sustainable, and reliable trading powered by Solana.
-          Experience lightning-fast transactions and a user-friendly interface.
+          Stablex is a decentralized exchange on Solana that combats volatility through 
+          an innovative exponential pricing model. Large and frequent trades incur an 
+          offset from the market price, fostering sustainable and balanced trading 
+          activities. Experience high-speed, low-cost transactions with built-in 
+          stability—only on Stablex.
         </p>
         <button
           onClick={handleGetStarted}
@@ -80,24 +88,43 @@ const LandingPage = () => {
         <h3 className="text-3xl font-bold text-orange-500 mb-8">Why Choose Stablex?</h3>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-6xl mx-auto">
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h4 className="text-xl font-bold text-blue-400">Fast Transactions</h4>
+            <h4 className="text-xl font-bold text-blue-400">Sustainable Trading</h4>
             <p className="text-gray-400 mt-2">
-              Powered by Solana&apos;s high-speed blockchain, trade instantly with zero lag.
+              Our exponential pricing mechanism disincentivizes volatile, large trades, 
+              stabilizing prices for all users.
             </p>
           </div>
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h4 className="text-xl font-bold text-orange-400">Secure and Reliable</h4>
             <p className="text-gray-400 mt-2">
-              Advanced cryptographic algorithms ensure your assets are always safe.
+              Built on Solana’s robust blockchain, your assets are always protected 
+              by advanced cryptography.
             </p>
           </div>
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h4 className="text-xl font-bold text-blue-400">User-Friendly Interface</h4>
+            <h4 className="text-xl font-bold text-blue-400">Blazing Fast</h4>
             <p className="text-gray-400 mt-2">
-              Intuitive and modern design for traders of all levels.
+              Leverage Solana’s lightning-fast transaction speeds to trade quickly 
+              with minimal fees.
             </p>
           </div>
         </div>
+      </section>
+
+      {/* List Your Coin Section */}
+      <section className="bg-gray-800 py-10 px-6 w-full text-center">
+        <h3 className="text-3xl font-bold text-blue-400 mb-4">List Your Token on Stablex</h3>
+        <p className="text-gray-300 max-w-3xl mx-auto mb-6">
+          Expand your project’s reach by listing on Stablex. Unlock 
+          sustainable liquidity and tap into a community that values 
+          balanced and fair trading. 
+        </p>
+        <button
+          onClick={handleListYourCoin}
+          className="bg-orange-500 px-6 py-3 rounded-lg text-lg font-semibold hover:bg-orange-600 transition"
+        >
+          List Now
+        </button>
       </section>
 
       {/* Footer Section */}
