@@ -356,11 +356,16 @@ const ExchangePage = () => {
     setSellQuantity("");
   };
 
+  const handleLogoClick = () => {
+    router.push("/");
+  };
+
+
   return (
     <div className="bg-gradient-to-br from-black via-gray-900 to-gray-800 min-h-screen text-white flex flex-col font-exo">
       {/* Header */}
       <header className="w-full flex justify-between items-center p-6">
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3" onClick={handleLogoClick}>
           <Image src="/logo.png" alt="Stablex Logo" width={48} height={48} priority />
           <h1 className="text-2xl font-bold">Stablex Exchange</h1>
         </div>
